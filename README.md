@@ -1,5 +1,4 @@
 
-<style> body { font-family: Arial, sans-serif; line-height: 1.6; direction: rtl; background-color: #f9f9f9; color: #333; margin: 0; padding: 20px; } h1, h2, h3 { color: #0073e6; } ul { margin: 0; padding-left: 20px; } code { background-color: #f4f4f4; padding: 2px 4px; border-radius: 4px; font-family: monospace; } .container { max-width: 800px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); } .code-block { background: #f4f4f4; padding: 10px; border-radius: 5px; font-family: monospace; white-space: pre; overflow-x: auto; } </style>
 پروژه حسابداری آنلاین
 
 معرفی پروژه

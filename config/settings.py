@@ -49,9 +49,7 @@ INSTALLED_APPS = [
 
     #My App
     'core',
-    'invoices',
-    'products',
-    'reports',
+
 ]
 
 INTERNAL_IPS = [

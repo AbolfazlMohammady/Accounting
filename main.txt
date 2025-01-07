@@ -1,0 +1,14 @@
+{
+    "phone_or_email": "09123456789",
+    "password": "password123"
+}
+
+{
+    "phone_or_email": "abolfazl@gmail.com",
+    "password": "Aa625100125!"
+}
+
+{
+    "phone_or_email": "09339796360",
+    "password": "625100125a"
+}

@@ -1,6 +1,6 @@
 from django.urls import path, include
 
-from .views import LoginOrRegisterView, ProfileViewSet
+from .views import LoginOrRegisterView, ProfileViewSet , RefreshTokenView
 
 profile_viewset = ProfileViewSet.as_view({
     'get': 'retrieve',
@@ -18,6 +18,7 @@ delete_account_view = ProfileViewSet.as_view({
 
 urlpatterns = [
     path('login/', LoginOrRegisterView.as_view(), name='login'),
+    path('refresh_token/', RefreshTokenView.as_view(), name='login'),
     path('profile/', profile_viewset, name='profile'),
     path('profile/change_password/', change_password_view, name='change_password'),
     path('profile/delete_account/', delete_account_view, name='delete_account'),

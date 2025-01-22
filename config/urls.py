@@ -7,6 +7,7 @@ urlpatterns = [
     path('grappelli/', include('grappelli.urls')),
     path('admin/', admin.site.urls),
     path('api/v1/', include('core.urls')),
+    path('api/v1/', include('support.urls')),
     path('health/', include('health_check.urls')),
 ]
 if settings.DEBUG:

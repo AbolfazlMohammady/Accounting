@@ -19,6 +19,7 @@ celery = "*"
 redis = "*"
 django-filter = "*"
 drf-yasg = "*"
+drf-nested-routers = "*"
 
 [dev-packages]
 

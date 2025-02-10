@@ -20,6 +20,9 @@ redis = "*"
 django-filter = "*"
 drf-yasg = "*"
 drf-nested-routers = "*"
+selenium = "*"
+webdriver-manager = "==3.8.0"
+rubika = "*"
 
 [dev-packages]
 

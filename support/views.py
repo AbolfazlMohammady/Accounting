@@ -41,7 +41,7 @@ class MessageViewSet(GenericViewSet,
                     mixins.CreateModelMixin,
                     mixins.ListModelMixin, 
                     mixins.RetrieveModelMixin): 
-    queryset = Message.objects.select_related('ticket', 'sender').all()
+    
     serializer_class= MessageSerializer
     permission_classes = [IsAuthenticated]
 
@@ -51,3 +51,8 @@ class MessageViewSet(GenericViewSet,
         if self.request.method == "DELETE":
             return [IsAdminUser()]
         return super().get_permissions()
+    
+    def get_queryset(self):
+        if self.request.user.is_staff:
+            return Message.objects.select_related('ticket', 'sender').all()
+        return Message.objects.select_related('ticket', 'sender').filter(sender=self.request.user)

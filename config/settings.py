@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     #My App
     'core',
     'support',
+    'blog',
 
 ]
 

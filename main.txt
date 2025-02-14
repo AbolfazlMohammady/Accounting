@@ -12,3 +12,14 @@
     "phone_or_email": "09339796360",
     "password": "625100125a"
 }
+
+{
+    "phone": "09339796368",
+    "email": "",
+    "full_name": "admin",
+    "image": "/media/profile/css-3_5968242.png",
+    "age": null,
+    "role": "user",
+    "gender": null,
+    "bio": "sss"
+}

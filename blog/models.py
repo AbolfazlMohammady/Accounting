@@ -16,7 +16,7 @@ class Post(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
     category = models.CharField(choices=CATEGORY_CHOICES, max_length=1)
-    image = models.ImageField(upload_to='post')
+    image = models.ImageField(upload_to='post', null=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     status = models.CharField(choices=STATUS_POST, default='UR', max_length=2)
     created_at = models.DateField(auto_now_add=True)
@@ -30,7 +30,7 @@ class Post(models.Model):
 class Comment(models.Model):
     content = models.TextField()
     created_at = models.DateField(auto_now_add=True)
-    post = models.ManyToManyField(Post)
+    post = models.ForeignKey(Post, on_delete=models.CASCADE,null=True, related_name='comments')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 
     def __str__(self):

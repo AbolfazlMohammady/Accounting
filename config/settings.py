@@ -20,6 +20,7 @@ ALLOWED_HOSTS = []
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',  # WebSocket Server
     'grappelli',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -35,7 +36,10 @@ INSTALLED_APPS = [
     'health_check.storage',                     # بررسی سیستم فایل یا فضای ذخیره‌سازی
     'health_check.contrib.migrations',          # بررسی وضعیت مایگریشن‌ها
     # 'health_check.contrib.messages',              # بررسی Celery
-    'health_check.contrib.s3boto3_storage', 
+    'health_check.contrib.s3boto3_storage',
+
+    # Web socket
+    'channels', 
 
     #App System
     'drf_yasg',
@@ -51,6 +55,7 @@ INSTALLED_APPS = [
     'core',
     'support',
     'blog',
+    'likes',
 
 ]
 
@@ -177,3 +182,18 @@ GRAPPELLI_ADMIN_TITLE = "پنل مدیریت من"
 CELERY_BROKER_URL = 'redis://localhost:6379/0'
 CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
+
+# تنظیمات برای WebSockets
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("127.0.0.1", 6379)],
+        },
+    },
+}
+
+
+ASGI_APPLICATION = "config.asgi.application"
+
+

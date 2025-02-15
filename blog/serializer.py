@@ -25,10 +25,19 @@ class PostSerializer(serializers.ModelSerializer):
     author = serializers.CharField(source ='author.full_name',read_only= True )
     category = serializers.CharField(source ='get_category_display')
     status = serializers.CharField(source ='get_status_display',read_only= True)
+    like = serializers.SerializerMethodField(read_only=True)
+    likes = serializers.SerializerMethodField(read_only=True)
+
+    def get_like(self, post: Post):
+        return post.likes.filter(user=self.context["request"].user).exists()
+    
+    def get_likes(self, post: Post):
+        return post.likes.count()
+
 
     class Meta:
         model = Post
-        fields = ['title','description','category','image','status','author','created_at','update_at']
+        fields = ['title','description','category','image','status','likes', 'like','views','author','created_at','update_at']
 
     def update(self, instance, validated_data):
         request = self.context.get('request')
@@ -48,10 +57,20 @@ class RetrievePostSerializer(serializers.ModelSerializer):
     category = serializers.CharField(source ='get_category_display')
     status = serializers.CharField(source ='get_status_display',read_only= True)
     comments = CommentSerializer(many=True, read_only=True)
+    like = serializers.SerializerMethodField(read_only=True)
+    likes = serializers.SerializerMethodField(read_only=True)
+
+    def get_like(self, post: Post):
+        return post.likes.filter(user=self.context["request"].user).exists()
+    
+    def get_likes(self, post: Post):
+        return post.likes.count()
+
 
     class Meta:
         model = Post
-        fields = ['title','description','category','image','status','author','created_at','update_at','comments']
+        fields = ['title','description','category','image','status','likes', 'like','views','author','update_at','comments']
+        read_only_fields = ['views']
 
 
 
@@ -59,10 +78,21 @@ class CustomPostSerializer(serializers.ModelSerializer):
     author = UserSerializer(read_only= True)
     category = serializers.CharField(source ='get_category_display')
     status = serializers.CharField(source ='get_status_display',read_only= True)
+    like = serializers.SerializerMethodField(read_only=True)
+    likes = serializers.SerializerMethodField(read_only=True)
+
+    def get_like(self, post: Post):
+        return post.likes.filter(user=self.context["request"].user).exists()
+    
+    def get_likes(self, post: Post):
+        return post.likes.count()
+    
 
     class Meta:
         model = Post
-        fields = ['id','title','description','category', 'status','image','author','created_at','update_at']
+        fields = ['id','title','description','category', 'status','image','likes', 'like','views','author','created_at','update_at']
+        read_only_fields = ['views']
+
  
 
 class CreatePostSerializer(serializers.ModelSerializer):
@@ -84,7 +114,8 @@ class UpdatePostSerializer(serializers.ModelSerializer):
     author = serializers.CharField(source ='author.full_name',read_only= True )
     class Meta:
         model = Post
-        fields = ['title','description','category','image','status','author','created_at','update_at']
+        fields = ['title','description','category','image','status','author', 'views','created_at','update_at']
+        read_only_fields = ['views']
 
     def update(self, instance, validated_data):
         request = self.context.get('request')

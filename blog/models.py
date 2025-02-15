@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from likes.models import LikedItem
+from django.contrib.contenttypes.fields import GenericRelation
 
 class Post(models.Model):
     CATEGORY_CHOICES = [
@@ -19,6 +21,8 @@ class Post(models.Model):
     image = models.ImageField(upload_to='post', null=True)
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     status = models.CharField(choices=STATUS_POST, default='UR', max_length=2)
+    views = models.PositiveIntegerField(default=0)
+    likes = GenericRelation(LikedItem)
     created_at = models.DateField(auto_now_add=True)
     update_at = models.DateTimeField(auto_now=True)
 

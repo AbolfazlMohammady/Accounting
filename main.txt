@@ -23,3 +23,8 @@
     "gender": null,
     "bio": "sss"
 }
+
+{
+    "object_id": 7,
+    "content_type": 3
+}

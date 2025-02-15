@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/v1/', include('core.urls')),
     path('api/v1/', include('support.urls')),
     path('api/v1/', include('blog.urls')),
+    path('api/v1/', include('likes.urls')),
     path('health/', include('health_check.urls')),
 ]
 if settings.DEBUG:

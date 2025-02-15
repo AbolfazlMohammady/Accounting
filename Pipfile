@@ -23,6 +23,9 @@ drf-nested-routers = "*"
 selenium = "*"
 webdriver-manager = "==3.8.0"
 rubika = "*"
+channels = "*"
+daphne = "*"
+uvicorn = "*"
 
 [dev-packages]
 

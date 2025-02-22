@@ -7,10 +7,11 @@ from django.conf import settings
 urlpatterns = [
     path('grappelli/', include('grappelli.urls')),
     path('admin/', admin.site.urls),
-    path('api/v1/', include('core.urls')),
-    path('api/v1/', include('support.urls')),
-    path('api/v1/', include('blog.urls')),
-    path('api/v1/', include('likes.urls')),
+    path('api/v1/core/', include('core.urls')),
+    path('api/v1/support/', include('support.urls')),
+    path('api/v1/blog/', include('blog.urls')),
+    path('api/v1/project/', include('task_management.urls')),
+    path('api/v1/like/', include('likes.urls')),
     path('health/', include('health_check.urls')),
 ]
 if settings.DEBUG:

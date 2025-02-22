@@ -5,9 +5,9 @@ from rest_framework_nested import routers
 from .views import MessageViewSet,TicketViewSet
 
 router = routers.DefaultRouter()
-router.register('tickets', TicketViewSet, basename='tickets')
+router.register('', TicketViewSet, basename='tickets')
 
-tickets_router = routers.NestedDefaultRouter(router, 'tickets', lookup='ticket')
+tickets_router = routers.NestedDefaultRouter(router, '', lookup='ticket')
 tickets_router.register('messages', MessageViewSet, basename='ticket-messages')
 
 

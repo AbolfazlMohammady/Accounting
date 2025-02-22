@@ -5,9 +5,9 @@ from rest_framework_nested import routers
 from . import views
 
 router = routers.DefaultRouter()
-router.register('blogs', views.PostViewSet, basename='posts')
+router.register('', views.PostViewSet, basename='posts')
 
-blog_router = routers.NestedDefaultRouter(router, 'blogs', lookup='post')
+blog_router = routers.NestedDefaultRouter(router, '', lookup='post')
 blog_router.register('comment', views.CommentViewSet, basename='comment')
 
 urlpatterns = [

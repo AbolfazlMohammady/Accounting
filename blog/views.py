@@ -63,30 +63,18 @@ class PostViewSet(ModelViewSet):
     
     
     def retrieve(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            return Response({"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
+
         post = self.get_object()
+
         Post.objects.filter(id=post.id).update(views=F('views') + 1)
-        post.refresh_from_db()
+        post.refresh_from_db()  
 
         serializer = self.get_serializer(post)
+        
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-
-    @action(detail=True, methods=['post'], permission_classes=[permissions.IsAuthenticated])
-    def like(self, request, pk=None):
-        post = self.get_object()
-        user = request.user
-
-        # چک کردن اینکه کاربر قبلاً لایک کرده یا نه
-        if user in post.liked_users.all():
-            return Response({"detail": "You have already liked this post."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # اضافه کردن کاربر به لیست لایک‌ها
-        post.liked_users.add(user)
-        post.like_count += 1 
-        post.save()
-
-        return Response({"detail": "Post liked successfully."}, status=status.HTTP_200_OK)
-    
+ 
 
 
 class CommentViewSet(mixins.CreateModelMixin,

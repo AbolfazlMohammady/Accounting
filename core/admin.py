@@ -42,7 +42,7 @@ class CustomUserAdmin(ExportMixin, ImportMixin, UserAdmin):
             },
         ),
     )
-    list_display = ("phone", "email", "full_name", "is_staff")
+    list_display = ('id',"phone", "email", "full_name", "is_staff")
     search_fields = ("phone", "full_name", "email")
     ordering = ("phone",)
 

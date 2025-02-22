@@ -3,7 +3,7 @@ from .routers import CustomRouter
 from .views import LikedItemViewSet
 
 router = CustomRouter()
-router.register('like', LikedItemViewSet, basename="items")
+router.register('', LikedItemViewSet, basename="items")
 
 
 urlpatterns = router.urls

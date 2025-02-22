@@ -1,7 +1,8 @@
 from django.db.models import Q
 from rest_framework import filters
-from rest_framework import viewsets, status, permissions
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
+from rest_framework import viewsets, status, permissions
 from rest_framework.pagination import PageNumberPagination
 
 
@@ -10,31 +11,14 @@ from .serializer import ProjectListSerializer,ProjectCreateSeializer,\
                         ProjectDetailSerializer, ProjectUpdateSerializer
 
 
-
 class ProjectViewSet(viewsets.ViewSet):
-
+    
     def get_object(self, pk):
         """بررسی وجود پروژه و بازگردانی آن"""
-        try:
-            return Project.objects.get(id=pk)
-        except Project.DoesNotExist:
-            return None
+        return get_object_or_404(Project, id=pk)
 
-    def project_list(self, request):
-        """ لیست پروژه‌هایی که کاربر عضو یا مالک آن‌هاست."""
-        user = request.user
-
-        if request.user.is_authenticated:  
-            queryset = Project.objects\
-                .select_related('owner')\
-                .prefetch_related('members')\
-                .filter(Q(members=user) | Q(owner=user))\
-                .only('id', 'title', 'description', 'owner', 'created_at', 'update')\
-                .distinct().order_by('-update')  
-        else:  
-            # می‌توانید در اینجا مشخص کنید که در صورت لاگین نبودن کاربر، چه چیزی را برگردانید  
-            queryset = Project.objects.none()
-
+    def filter_projects(self, queryset, request):
+        """اعمال فیلترها برای لیست پروژه‌ها"""
         search_query = request.query_params.get('search', None)
         if search_query:
             queryset = queryset.filter(title__icontains=search_query)
@@ -42,7 +26,23 @@ class ProjectViewSet(viewsets.ViewSet):
         created_after = request.query_params.get('created_after', None)
         if created_after:
             queryset = queryset.filter(created_at__gte=created_after)
+        
+        return queryset
 
+    def project_list(self, request):
+        """لیست پروژه‌هایی که کاربر عضو یا مالک آن‌هاست."""
+        user = request.user
+        if not user.is_authenticated:
+            return Response({"error": "شما احراز هویت نشده‌اید."}, status=status.HTTP_401_UNAUTHORIZED)
+        
+        queryset = Project.objects\
+            .select_related('owner')\
+            .prefetch_related('members')\
+            .filter(Q(members=user) | Q(owner=user))\
+            .only('id', 'title', 'description', 'owner', 'created_at', 'update')\
+            .distinct().order_by('-update')  
+
+        queryset = self.filter_projects(queryset, request)
 
         paginator = PageNumberPagination()
         paginator.page_size = 6
@@ -51,59 +51,44 @@ class ProjectViewSet(viewsets.ViewSet):
         serializer = ProjectListSerializer(project_paginator, many=True)
         return paginator.get_paginated_response(serializer.data)
 
-
-    def project_detail(self, request, pk:int):
+    def project_detail(self, request, pk: int):
         """جزییات هر پروژه"""
         project = self.get_object(pk)
-        if not project:
-            return Response({'error': "پروژه پیدا نشد!"}, status=status.HTTP_404_NOT_FOUND)
-        
-        serializer=  ProjectDetailSerializer(project)
+        serializer = ProjectDetailSerializer(project)
         return Response(serializer.data, status=status.HTTP_200_OK)
-    
-    
+
     def project_create(self, request):
-        """ساخت پروژه توسط  owner (فقط کاربران احراز شده می‌توانند پروژه ایجاد کنند)"""
-        if not request.user or request.user.is_anonymous:
+        """ساخت پروژه توسط owner (فقط کاربران احراز شده می‌توانند پروژه ایجاد کنند)"""
+        if not request.user.is_authenticated:
             return Response({"detail": "شما احراز هویت نشده‌اید."}, status=status.HTTP_401_UNAUTHORIZED)
-    
-        
+
         serializer = ProjectCreateSeializer(data=request.data, context={'request': request})
 
-        if serializer.is_valid(raise_exception=True):
+        if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-    
 
     def project_update(self, request, pk: int):
         """به‌روزرسانی پروژه فقط توسط مالک"""
         project = self.get_object(pk)
-        if not project:
-            return Response({'error': "پروژه پیدا نشد!"}, status=status.HTTP_404_NOT_FOUND)
 
         if project.owner_id != request.user.id:
             return Response({'error': 'فقط صاحب پروژه می‌تواند تغییرات اعمال کند.'}, status=status.HTTP_403_FORBIDDEN)
 
         serializer = ProjectUpdateSerializer(project, data=request.data, partial=True)
-
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
 
-    def project_delete(self, request, pk:int):
+    def project_delete(self, request, pk: int):
         """حذف پروژه توسط صاحب پروژه"""
         project = self.get_object(pk)
-        if not project:
-            return Response({'error': "پروژه پیدا نشد!"}, status=status.HTTP_404_NOT_FOUND)
-        
+
         if project.owner_id != request.user.id:
             return Response({'error': 'فقط صاحب پروژه می‌تواند تغییرات اعمال کند.'}, status=status.HTTP_403_FORBIDDEN)
 
         project.delete()
         return Response({'message': 'پروژه با موفقیت حذف شد.'}, status=status.HTTP_204_NO_CONTENT)
-
-

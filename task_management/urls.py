@@ -9,7 +9,8 @@ urlpatterns = [
     })),
     path('<int:pk>/', ProjectViewSet.as_view({
         'get': 'project_detail',
-        'patch': 'project_update'
+        'patch': 'project_update',
+        'delete': 'project_delete',
     })),
     path('create/', ProjectViewSet.as_view({
         'post': 'project_create'

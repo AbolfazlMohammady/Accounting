@@ -13,6 +13,13 @@ from .serializer import ProjectListSerializer,ProjectCreateSeializer,\
 
 class ProjectViewSet(viewsets.ViewSet):
 
+    def get_object(self, pk):
+        """بررسی وجود پروژه و بازگردانی آن"""
+        try:
+            return Project.objects.get(id=pk)
+        except Project.DoesNotExist:
+            return None
+
     def project_list(self, request):
         """ لیست پروژه‌هایی که کاربر عضو یا مالک آن‌هاست."""
         user = request.user
@@ -21,7 +28,7 @@ class ProjectViewSet(viewsets.ViewSet):
             queryset = Project.objects\
                 .select_related('owner')\
                 .prefetch_related('members')\
-                .filter(Q(members=request.user) | Q(owner=request.user))\
+                .filter(Q(members=user) | Q(owner=user))\
                 .only('id', 'title', 'description', 'owner', 'created_at', 'update')\
                 .distinct().order_by('-update')  
         else:  
@@ -47,10 +54,10 @@ class ProjectViewSet(viewsets.ViewSet):
 
     def project_detail(self, request, pk:int):
         """جزییات هر پروژه"""
-        try:
-            project = Project.objects.get(id=pk)
-        except Project.DoesNotExist:
-            return Response({'error': "project not found!!!"}, status=status.HTTP_404_NOT_FOUND)
+        project = self.get_object(pk)
+        if not project:
+            return Response({'error': "پروژه پیدا نشد!"}, status=status.HTTP_404_NOT_FOUND)
+        
         serializer=  ProjectDetailSerializer(project)
         return Response(serializer.data, status=status.HTTP_200_OK)
     
@@ -71,9 +78,8 @@ class ProjectViewSet(viewsets.ViewSet):
 
     def project_update(self, request, pk: int):
         """به‌روزرسانی پروژه فقط توسط مالک"""
-        try:
-            project = Project.objects.get(id=pk)
-        except Project.DoesNotExist:
+        project = self.get_object(pk)
+        if not project:
             return Response({'error': "پروژه پیدا نشد!"}, status=status.HTTP_404_NOT_FOUND)
 
         if project.owner_id != request.user.id:
@@ -86,3 +92,18 @@ class ProjectViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+    def project_delete(self, request, pk:int):
+        """حذف پروژه توسط صاحب پروژه"""
+        project = self.get_object(pk)
+        if not project:
+            return Response({'error': "پروژه پیدا نشد!"}, status=status.HTTP_404_NOT_FOUND)
+        
+        if project.owner_id != request.user.id:
+            return Response({'error': 'فقط صاحب پروژه می‌تواند تغییرات اعمال کند.'}, status=status.HTTP_403_FORBIDDEN)
+
+        project.delete()
+        return Response({'message': 'پروژه با موفقیت حذف شد.'}, status=status.HTTP_204_NO_CONTENT)
+
+

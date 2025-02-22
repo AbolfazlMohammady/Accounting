@@ -86,3 +86,4 @@ class ProjectUpdateSerializer(_Project):
 
     #     return super().update(instance, filtered_data)
 
+

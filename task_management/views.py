@@ -10,8 +10,21 @@ from .models import Project, Task
 from .serializer import ProjectListSerializer,ProjectCreateSeializer,\
                         ProjectDetailSerializer, ProjectUpdateSerializer
 
+class IsOwner(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        return obj.owner == request.user
+         
 
 class ProjectViewSet(viewsets.ViewSet):
+
+    def get_permissions(self):
+        """اعمال پرمیشن فقط برای متدهای خاص"""
+
+        if self.action in ['project_update', 'project_delete']:
+            return [IsOwner()]
+        if self.action in ['project_list', 'project_create']:
+            return [permissions.IsAuthenticated()]
+        return [permissions.AllowAny()]
     
     def get_object(self, pk):
         """بررسی وجود پروژه و بازگردانی آن"""
@@ -19,6 +32,7 @@ class ProjectViewSet(viewsets.ViewSet):
 
     def filter_projects(self, queryset, request):
         """اعمال فیلترها برای لیست پروژه‌ها"""
+
         search_query = request.query_params.get('search', None)
         if search_query:
             queryset = queryset.filter(title__icontains=search_query)
@@ -31,16 +45,13 @@ class ProjectViewSet(viewsets.ViewSet):
 
     def project_list(self, request):
         """لیست پروژه‌هایی که کاربر عضو یا مالک آن‌هاست."""
-        user = request.user
-        if not user.is_authenticated:
-            return Response({"error": "شما احراز هویت نشده‌اید."}, status=status.HTTP_401_UNAUTHORIZED)
-        
+        user = request.user 
         queryset = Project.objects\
             .select_related('owner')\
             .prefetch_related('members')\
             .filter(Q(members=user) | Q(owner=user))\
             .only('id', 'title', 'description', 'owner', 'created_at', 'update')\
-            .distinct().order_by('-update')  
+            .distinct().order_by('-created_at')  
 
         queryset = self.filter_projects(queryset, request)
 
@@ -50,17 +61,17 @@ class ProjectViewSet(viewsets.ViewSet):
 
         serializer = ProjectListSerializer(project_paginator, many=True)
         return paginator.get_paginated_response(serializer.data)
+    
 
     def project_detail(self, request, pk: int):
         """جزییات هر پروژه"""
         project = self.get_object(pk)
         serializer = ProjectDetailSerializer(project)
         return Response(serializer.data, status=status.HTTP_200_OK)
+    
 
     def project_create(self, request):
         """ساخت پروژه توسط owner (فقط کاربران احراز شده می‌توانند پروژه ایجاد کنند)"""
-        if not request.user.is_authenticated:
-            return Response({"detail": "شما احراز هویت نشده‌اید."}, status=status.HTTP_401_UNAUTHORIZED)
 
         serializer = ProjectCreateSeializer(data=request.data, context={'request': request})
 
@@ -69,12 +80,12 @@ class ProjectViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response({'error': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+
     def project_update(self, request, pk: int):
         """به‌روزرسانی پروژه فقط توسط مالک"""
         project = self.get_object(pk)
 
-        if project.owner_id != request.user.id:
-            return Response({'error': 'فقط صاحب پروژه می‌تواند تغییرات اعمال کند.'}, status=status.HTTP_403_FORBIDDEN)
+        self.check_object_permissions(request, project)
 
         serializer = ProjectUpdateSerializer(project, data=request.data, partial=True)
         if serializer.is_valid():
@@ -82,13 +93,13 @@ class ProjectViewSet(viewsets.ViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
 
     def project_delete(self, request, pk: int):
         """حذف پروژه توسط صاحب پروژه"""
         project = self.get_object(pk)
-
-        if project.owner_id != request.user.id:
-            return Response({'error': 'فقط صاحب پروژه می‌تواند تغییرات اعمال کند.'}, status=status.HTTP_403_FORBIDDEN)
+        self.check_object_permissions(request, project)
 
         project.delete()
         return Response({'message': 'پروژه با موفقیت حذف شد.'}, status=status.HTTP_204_NO_CONTENT)
+

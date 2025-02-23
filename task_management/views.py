@@ -6,14 +6,12 @@ from rest_framework import viewsets, status, permissions
 from rest_framework.pagination import PageNumberPagination
 
 
+from .permission import IsOwner
 from .models import Project, Task
 from .serializer import ProjectListSerializer,ProjectCreateSeializer,\
                         ProjectDetailSerializer, ProjectUpdateSerializer
 
-class IsOwner(permissions.BasePermission):
-    def has_object_permission(self, request, view, obj):
-        return obj.owner == request.user
-         
+
 
 class ProjectViewSet(viewsets.ViewSet):
 

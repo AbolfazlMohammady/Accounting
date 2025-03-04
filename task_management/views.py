@@ -19,12 +19,13 @@ class ProjectViewSet(viewsets.ViewSet):
 
     def get_permissions(self):
         """اعمال پرمیشن فقط برای متدهای خاص"""
+        action = getattr(self, 'action', None)
 
         if self.action in ['project_update', 'project_delete','task_delete']:
             return [IsOwner()]
         if self.action in ['project_list', 'project_create','task_list', 'task_create']:
             return [permissions.IsAuthenticated()]
-        if self.action in ['task_detail']:
+        if self.action in ['task_detail','task_update']:
             return [IsOwnerOrAssigned()]
         if self.action in ['project_detail']:
             return [IsOwnerOrMembers()]
@@ -35,11 +36,11 @@ class ProjectViewSet(viewsets.ViewSet):
         """بررسی وجود پروژه و بازگردانی آن"""
         queryset = model.objects
 
-        if select:
-           queryset= queryset.select_related(*select)
+        if select is not None:
+            queryset = queryset.select_related(*select)
 
-        if perfech:
-           queryset= queryset.prefetch_related(*perfech)
+        if perfech is not None:
+            queryset = queryset.prefetch_related(*perfech)
 
         return get_object_or_404(queryset, id=pk)
     
@@ -154,6 +155,7 @@ class ProjectViewSet(viewsets.ViewSet):
     def task_update(self , request, pk):
         task = self.get_object(Task, pk, select=['project','assigned_user'])
         serializer = TaskUpdateSerializer(task ,data=request.data, partial=True, context={"request":request})
+        self.check_object_permissions(request, task)
         
         if serializer.is_valid():
             serializer.save()

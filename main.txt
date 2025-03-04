@@ -28,3 +28,20 @@
     "object_id": 7,
     "content_type": 3
 }
+
+
+for update
+{
+    "assigned_user": "Abolfazl Mohammadi"
+}
+{
+    "completed": "True"
+}
+
+for create
+{
+    "title": "نام تسک",
+    "description": "توضیحات تسک",
+    "project": " فروشگاهی",
+    "assigned_user": "sara",
+}

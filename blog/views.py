@@ -63,12 +63,12 @@ class PostViewSet(ModelViewSet):
     
     
     def retrieve(self, request, *args, **kwargs):
-        if not request.user.is_authenticated:
-            return Response({"detail": "Authentication required."}, status=status.HTTP_401_UNAUTHORIZED)
-
         post = self.get_object()
 
-        Post.objects.filter(id=post.id).update(views=F('views') + 1)
+        try:
+            Post.objects.filter(id=post.id).update(views=F('views') + 1)
+        except:
+            None
         post.refresh_from_db()  
 
         serializer = self.get_serializer(post)

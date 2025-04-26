@@ -10,6 +10,30 @@ from .models import Task, Project
 User = get_user_model()
 
 
+class TaskTimeMixin:
+    def get_time_difference_display(self, time):
+        if not time:
+            return "نامشخص"
+
+        now = timezone.now()
+        delta = now - time
+
+        if delta < timedelta(hours=24):
+            return f"{delta.seconds // 3600} ساعت پیش"
+        else:
+            return f"{delta.days} روز پیش"
+
+    def get_start_time(self, obj):
+        return self.get_time_difference_display(obj.start_time)
+
+    def get_completed_at(self, obj):
+        return "تکمیل نشده" if not obj.completed_at else self.get_time_difference_display(obj.completed_at)
+
+    def get_due_time(self, obj):
+        return "مشخص نشده هنوز" if not obj.due_time else self.get_time_difference_display(obj.due_time)
+    
+
+
 class UserProject(UserSerializer):
     class Meta(UserSerializer.Meta):
         fields = [field for field in UserSerializer.Meta.fields if field not in {'phone', 'email', 'password'}] + ['full_name']
@@ -118,49 +142,13 @@ class _Task(serializers.ModelSerializer):
         ]
 
 
-class TaskListSerializer(_Task):
+class TaskListSerializer(TaskTimeMixin,_Task):
     start_time = serializers.SerializerMethodField()
     completed_at = serializers.SerializerMethodField()
     due_time = serializers.SerializerMethodField()
 
-    def get_start_time(self, obj: Task):
-        if not obj.start_time:
-            return "نامشخص"
 
-        now = timezone.now()
-        delta = now - obj.start_time
-
-        if delta < timedelta(hours=24):
-            return f"{delta.seconds // 3600} ساعت پیش"
-        else:
-            return f"{delta.days} روز پیش"
-        
-    def get_completed_at(self, obj:Task):
-        if not obj.completed_at:
-            return 'تکمیل نشده'
-        
-        now = timezone.now()
-        delta = now - obj.completed_at
-
-        if delta < timedelta(hours=24):
-            return f"{delta.seconds // 3600} ساعت پیش"
-        else:
-            return f"{delta.days} روز پیش"
-        
-    def get_due_time(self, obj:Task):
-        if not obj.due_time:
-            return 'مشخص نشده هنوز'
-        
-        now = timezone.now()
-        delta = now - obj.due_time
-
-        if delta < timedelta(hours=24):
-            return f"{delta.seconds // 3600} ساعت "
-        else:
-            return f"{delta.days} روز "
-
-
-class TaskDetailSerializer(_Task):
+class TaskDetailSerializer(TaskTimeMixin,_Task):
     start_time = serializers.SerializerMethodField()
     completed_at = serializers.SerializerMethodField()
     due_time = serializers.SerializerMethodField()
@@ -168,42 +156,6 @@ class TaskDetailSerializer(_Task):
     class Meta(_Task.Meta):
         fields= [field for field in _Task.Meta.fields if field not in {'id'}]
     
-
-    def get_start_time(self, obj: Task):
-        if not obj.start_time:
-            return "نامشخص"
-
-        now = timezone.now()
-        delta = now - obj.start_time
-
-        if delta < timedelta(hours=24):
-            return f"{delta.seconds // 3600} ساعت پیش"
-        else:
-            return f"{delta.days} روز پیش"
-        
-    def get_completed_at(self, obj:Task):
-        if not obj.completed_at:
-            return 'تکمیل نشده'
-        
-        now = timezone.now()
-        delta = now - obj.completed_at
-
-        if delta < timedelta(hours=24):
-            return f"{delta.seconds // 3600} ساعت پیش"
-        else:
-            return f"{delta.days} روز پیش"
-        
-    def get_due_time(self, obj:Task):
-        if not obj.due_time:
-            return 'مشخص نشده هنوز'
-        
-        now = timezone.now()
-        delta = now - obj.due_time
-
-        if delta < timedelta(hours=24):
-            return f"{delta.seconds // 3600} ساعت "
-        else:
-            return f"{delta.days} روز "
 
 
 class TitleTaskPrimekeySerializer(serializers.PrimaryKeyRelatedField):
